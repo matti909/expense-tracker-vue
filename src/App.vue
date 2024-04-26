@@ -2,9 +2,9 @@
   <Header />
   <div class="container">
     <Balance :total="total" />
-    <Income :income="income" :expense="expense" />
+    <Income :income="+income" :expense="+expense" />
     <TransactionList :transactions="transactions" />
-    <AddTransaction />
+    <AddTransaction @transactionSubmitted="handleTransactionSubmitted" />
   </div>
 </template>
 
@@ -14,8 +14,12 @@ import Balance from './components/Balance.vue'
 import Income from './components/Income.vue'
 import TransactionList from './components/TransactionList.vue'
 import AddTransaction from './components/AddTransaction.vue'
+import { useToast } from 'vue-toast-notification'
+import 'vue-toast-notification/dist/theme-sugar.css'
 
 import { ref, computed } from 'vue'
+
+const $toast = useToast()
 
 const transactions = ref([
   { id: 1, text: 'Flower', amount: -19.99 },
@@ -50,4 +54,20 @@ const expense = computed(() => {
     }, 0)
     .toFixed(2)
 })
+
+//Generate unique ID
+const generateUniqueId = () => {
+  return Math.floor(Math.random() * 1000000)
+}
+
+//add transaction
+const handleTransactionSubmitted = (transactionData) => {
+  transactions.value.push({
+    id: generateUniqueId(),
+    text: transactionData.text,
+    amount: transactionData.amount
+  })
+
+  $toast.success('expenses added')
+}
 </script>
