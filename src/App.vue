@@ -1,10 +1,17 @@
 <template>
   <Header />
   <div class="container">
-    <Balance :total="total" />
-    <Income :income="+income" :expense="+expense" />
-    <TransactionList :transactions="transactions" />
-    <AddTransaction @transactionSubmitted="handleTransactionSubmitted" />
+    <div>
+      <Balance :total="total" />
+      <Income :income="+income" :expense="+expense" />
+      <TransactionList
+        :transactions="transactions"
+        @transactionDeleted="handleTransactionDeleted"
+      />
+    </div>
+    <div>
+      <AddTransaction @transactionSubmitted="handleTransactionSubmitted" />
+    </div>
   </div>
 </template>
 
@@ -17,16 +24,19 @@ import AddTransaction from './components/AddTransaction.vue'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const $toast = useToast()
 
-const transactions = ref([
-  { id: 1, text: 'Flower', amount: -19.99 },
-  { id: 2, text: 'Salary', amount: 299.97 },
-  { id: 3, text: 'Book', amount: -10 },
-  { id: 4, text: 'Camera', amount: 150 }
-])
+const transactions = ref([])
+
+onMounted(() => {
+  const saveTransactions = JSON.parse(localStorage.getItem('transactions'))
+
+  if (saveTransactions) {
+    transactions.value = saveTransactions
+  }
+})
 
 //Get total
 const total = computed(() => {
@@ -68,6 +78,20 @@ const handleTransactionSubmitted = (transactionData) => {
     amount: transactionData.amount
   })
 
+  saveTransactionToLocalstorage()
+
   $toast.success('expenses added')
+}
+
+//Delete transaction
+const handleTransactionDeleted = (id) => {
+  transactions.value = transactions.value.filter((transaction) => transaction.id !== id)
+  saveTransactionToLocalstorage()
+  $toast.success('Transaction deleted')
+}
+
+//Save to localstorage
+const saveTransactionToLocalstorage = () => {
+  localStorage.setItem('transactions', JSON.stringify(transactions.value))
 }
 </script>
